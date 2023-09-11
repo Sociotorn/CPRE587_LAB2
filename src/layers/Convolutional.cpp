@@ -28,4 +28,4 @@ void ConvolutionalLayer::computeTiled(const LayerData& dataIn) const {
 void ConvolutionalLayer::computeSIMD(const LayerData& dataIn) const {
     // TODO: Your Code Here...
 }
-};  // namespace ML
+}  // namespace ML

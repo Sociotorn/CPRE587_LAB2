@@ -22,4 +22,4 @@ bool LayerParams::isCompatible(const LayerParams& params) const {
 // Ensure that data being inputted is of the correct size and shape that the layer expects
 bool Layer::checkDataInputCompatibility(const LayerData& data) const { return inParams.isCompatible(data.getParams()); }
 
-};  // namespace ML
+}  // namespace ML

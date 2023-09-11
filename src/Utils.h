@@ -122,7 +122,7 @@ template <typename... Args> inline void logDebug(const std::string& msg, Args&&.
 template <typename... Args> inline void logWarn(const std::string_view& fmt_str, Args&&... args) {
     std::string msg = vformat(fmt_str, make_format_args(args...));
 #else
-template <typename... Args> inline void logWarn(cosnt std::string& msg, Args&&... args) {
+template <typename... Args> inline void logWarn(const std::string& msg, Args&&... args) {
 #endif
     if (Config::FANCY_LOGGING)
         std::cout << "[" << LogMod(CCode::FG_YELLOW) << "Warning" << LogMod(CCode::FG_DEFAULT) << "]: " << msg << std::endl;

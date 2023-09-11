@@ -9,4 +9,4 @@ constexpr bool FANCY_LOGGING = true;
 
 // Floating Point Compare Epsilon
 constexpr float EPSILON = 0.001;
-};  // namespace ML::Config
+}  // namespace ML::Config
