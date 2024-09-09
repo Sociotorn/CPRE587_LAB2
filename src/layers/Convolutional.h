@@ -21,17 +21,17 @@ class ConvolutionalLayer : public Layer {
     const LayerData& getBiasData() const { return biasData; }
 
     // Allocate all resources needed for the layer & Load all of the required data for the layer
-    template <typename T> void allocateLayer() {
-        Layer::allocateOutputBuffer<Array3D<T>>();
-        weightData.loadData<Array4D<T>>();
-        biasData.loadData<Array1D<T>>();
+    virtual void allocLayer() override {
+        Layer::allocLayer();
+        weightData.loadData();
+        biasData.loadData();
     }
 
     // Fre all resources allocated for the layer
-    template <typename T> void freeLayer() {
-        Layer::freeOutputBuffer<Array3D<T>>();
-        weightData.freeData<Array4D<T>>();
-        biasData.freeData<Array1D<T>>();
+    virtual void freeLayer() override {
+        Layer::freeLayer();
+        weightData.freeData();
+        biasData.freeData();
     }
 
     // Virtual functions
