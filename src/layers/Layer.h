@@ -55,6 +55,10 @@ class LayerData {
         return ((T*)data.get())[flat_index];
     }
 
+    template <typename T> T get(unsigned int flat_index) const {
+        return ((T*)data.get())[flat_index];
+    }
+
     // Allocate data values
     inline void allocData() {
         if (data) return;
@@ -195,7 +199,7 @@ inline void LayerData::saveData(Path filePath) {
 #endif
         std::cout << "Opened binary file " << params.filePath << std::endl;
     } else {
-        throw std::runtime_error("Failed to open binary file: " + params.filePath);
+        throw std::runtime_error("Failed to oelapsedpen binary file: " + params.filePath);
     }
 
 #ifdef ZEDBOARD
