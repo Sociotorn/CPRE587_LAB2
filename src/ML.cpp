@@ -1,4 +1,3 @@
-#include <filesystem>
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -14,17 +13,13 @@
 #include "layers/Softmax.h"
 
 #ifdef ZEDBOARD
-#    include "ML.h"
-namespace ML {
-#else
-using namespace ML;
+#include <file_transfer/file_transfer.h>
 #endif
 
-// Make our code a bit cleaner
-namespace fs = std::filesystem;
+namespace ML {
 
 // Build our ML toy model
-Model buildToyModel(const fs::path modelPath) {
+Model buildToyModel(const Path modelPath) {
     Model model;
     logInfo("--- Building Toy Model ---");
 
@@ -40,11 +35,12 @@ Model buildToyModel(const fs::path modelPath) {
     // LayerParams conv1_biasParam(sizeof(fp32), {32}, modelPath / "conv1_biases.bin");
     // auto conv1 = new ConvolutionalLayer(conv1_inDataParam, conv1_outDataParam, conv1_weightParam, conv1_biasParam);
 
-    auto conv1 = new ConvolutionalLayer({{sizeof(fp32), {64, 64, 3}},                                     // Input Data
-                                         {sizeof(fp32), {60, 60, 32}},                                    // Output Data
-                                         {sizeof(fp32), {5, 5, 3, 32}, modelPath / "conv1_weights.bin"},  // Weights
-                                         {sizeof(fp32), {32}, modelPath / "conv1_biases.bin"}});          // Bias
-    model.addLayer(conv1);
+    model.addLayer<ConvolutionalLayer>(
+        LayerParams{sizeof(fp32), {64, 64, 3}},                                    // Input Data
+        LayerParams{sizeof(fp32), {60, 60, 32}},                                   // Output Data
+        LayerParams{sizeof(fp32), {5, 5, 3, 32}, modelPath / "conv1_weights.bin"}, // Weights
+        LayerParams{sizeof(fp32), {32}, modelPath / "conv1_biases.bin"}            // Bias
+    );
 
     // --- Conv 2: L2 ---
     // Input shape: 60x60x32
@@ -97,114 +93,124 @@ Model buildToyModel(const fs::path modelPath) {
     return model;
 }
 
-void runBasicTest(const Model& model, const fs::path& basePath) {
+void runBasicTest(const Model& model, const Path& basePath) {
     logInfo("--- Running Basic Test ---");
 
     // Load an image
-    fs::path imgPath("./data/image_0.bin");
-    dimVec dims = {64, 64, 3};
-    Array3D_fp32 img = loadArray<Array3D_fp32>(imgPath, dims);
+    LayerData img = {{sizeof(fp32), {64, 64, 3}, "./data/image_0.bin"}};
+    img.loadData();
 
     // Compare images
-    std::cout << "Comparing image 0 to itself (max error): " << compareArray<Array3D_fp32>(img, img, dims) << std::endl
+    std::cout << "Comparing image 0 to itself (max error): " << img.compare<fp32>(img) << std::endl
               << "Comparing image 0 to itself (T/F within epsilon " << ML::Config::EPSILON << "): " << std::boolalpha
-              << compareArrayWithin<Array3D_fp32>(img, img, dims, ML::Config::EPSILON) << std::endl;
+              << img.compareWithin<fp32>(img, ML::Config::EPSILON) << std::endl;
 
     // Test again with a modified copy
     std::cout << "\nChange a value by 0.1 and compare again" << std::endl;
-    Array3D_fp32 imgCopy = allocArray<Array3D_fp32>(dims);
-    copyArray<Array3D_fp32>(img, imgCopy, dims);
-    imgCopy[0][0][0] += 0.1;
+    
+    LayerData imgCopy = img;
+    imgCopy.get<fp32>(0) += 0.1;
 
     // Compare images
-    compareArrayWithinPrint(img, imgCopy, dims);
+    img.compareWithinPrint<fp32>(imgCopy);
 
     // Test again with a modified copy
     log("Change a value by 0.1 and compare again...");
-    imgCopy[0][0][0] += 0.1;
+    imgCopy.get<fp32>(0) += 0.1;
 
     // Compare Images
-    compareArrayWithinPrint(img, imgCopy, dims);
-
-    // Clean up after ourselves
-    freeArray<Array3D_fp32>(img, dims);
-    freeArray<Array3D_fp32>(imgCopy, dims);
+    img.compareWithinPrint<fp32>(imgCopy);
 }
 
-void runLayerTest(const std::size_t layerNum, const Model& model, const fs::path& basePath) {
+void runLayerTest(const std::size_t layerNum, const Model& model, const Path& basePath) {
     // Load an image
-    logInfo("--- Running Infrence Test ---");
+    logInfo("--- Running Inference Test ---");
     dimVec inDims = {64, 64, 3};
 
     // Construct a LayerData object from a LayerParams one
     LayerData img({sizeof(fp32), inDims, basePath / "image_0.bin"});
-    img.loadData<Array3D_fp32>();
+    img.loadData();
 
-    // Run infrence on the model
-    const LayerData output = model.infrenceLayer(img, layerNum, Layer::InfType::NAIVE);
+    Timer timer("Layer Inference");
+
+    // Run inference on the model
+    timer.start();
+    const LayerData output = model.inferenceLayer(img, layerNum, Layer::InfType::NAIVE);
+    timer.stop();
 
     // Compare the output
     // Construct a LayerData object from a LayerParams one
-    dimVec outDims = model[layerNum]->getOutputParams().dims;
+    dimVec outDims = model[layerNum].getOutputParams().dims;
     LayerData expected({sizeof(fp32), outDims, basePath / "image_0_data" / "layer_0_output.bin"});
-    expected.loadData<Array3D_fp32>();
-    output.compareWithinPrint<Array3D_fp32>(expected);
+    expected.loadData();
+    output.compareWithinPrint<fp32>(expected);
 }
 
-void runInfrenceTest(const Model& model, const fs::path& basePath) {
+void runInferenceTest(const Model& model, const Path& basePath) {
     // Load an image
-    logInfo("--- Running Infrence Test ---");
+    logInfo("--- Running Inference Test ---");
     dimVec inDims = {64, 64, 3};
 
     // Construct a LayerData object from a LayerParams one
     LayerData img({sizeof(fp32), inDims, basePath / "image_0.bin"});
-    img.loadData<Array3D_fp32>();
+    img.loadData();
 
-    // Run infrence on the model
-    const LayerData output = model.infrence(img, Layer::InfType::NAIVE);
+    Timer timer("Full Inference");
+
+    // Run inference on the model
+    timer.start();
+    const LayerData output = model.inference(img, Layer::InfType::NAIVE);
+    timer.stop();
 
     // Compare the output
     // Construct a LayerData object from a LayerParams one
-    dimVec outDims = model.getOutputLayer()->getOutputParams().dims;
+    dimVec outDims = model.getOutputLayer().getOutputParams().dims;
     LayerData expected({sizeof(fp32), outDims, basePath / "image_0_data" / "layer_0_output.bin"});
-    expected.loadData<Array3D_fp32>();
-    output.compareWithinPrint<Array3D_fp32>(expected);
+    expected.loadData();
+    output.compareWithinPrint<fp32>(expected);
 }
 
-// clang-format off
-#ifdef ZEDBOARD
-int runModelTest(){
-#else
-int main(int argc, char** argv) {
-    // Hanlde command line arguments
-    Args& args = Args::getInst();
-    args.parseArgs(argc, argv);
-#endif
-
+void runTests() {
     // Base input data path (determined from current directory of where you are running the command)
-    fs::path basePath("data");  // May need to be altered for zedboards loading from SD Cards
+    Path basePath("data");  // May need to be altered for zedboards loading from SD Cards
 
     // Build the model and allocate the buffers
     Model model = buildToyModel(basePath / "model");
-    model.allocLayers<fp32>();
+    model.allocLayers();
 
     // Run some framework tests as an example of loading data
     runBasicTest(model, basePath);
 
-    // Run a layer infrence test
+    // Run a layer inference test
     runLayerTest(0, model, basePath);
 
-    // Run an end-to-end infrence test
-    runInfrenceTest(model, basePath);
+    // Run an end-to-end inference test
+    runInferenceTest(model, basePath);
 
     // Clean up
-    model.freeLayers<fp32>();
-
-    return 0;
+    model.freeLayers();
+    std::cout << "\n\n----- ML::runTests() COMPLETE -----\n";
 }
-// clang-format on
+
+} // namespace ML
 
 #ifdef ZEDBOARD
+extern "C"
+int main() {
+    try {
+        static FATFS fatfs;
+        if (f_mount(&fatfs, "/", 1) != FR_OK) {
+            throw std::runtime_error("Failed to mount SD card. Is it plugged in?");
+        }
+        ML::runTests();
+    } catch (const std::exception& e) {
+        std::cerr << "\n\n----- EXCEPTION THROWN -----\n" << e.what() << '\n';
+    }
+    std::cout << "\n\n----- STARTING FILE TRANSFER SERVER -----\n";
+    FileServer::start_file_transfer_server();
 }
-;  // namespace ML;
+#else
+int main() {
+    ML::runTests();
+}
 #endif
