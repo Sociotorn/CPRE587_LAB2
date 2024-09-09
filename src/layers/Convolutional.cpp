@@ -11,8 +11,6 @@ namespace ML {
 
 // Compute the convultion for the layer data
 void ConvolutionalLayer::computeNaive(const LayerData& dataIn) const {
-    fp32 test = dataIn.get<fp32>(0);
-    (void) test;
     // TODO: Your Code Here...
 }
 
