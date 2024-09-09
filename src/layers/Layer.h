@@ -111,7 +111,7 @@ class Layer {
     // Getter Functions
     const LayerParams& getInputParams() const { return inParams; }
     const LayerParams& getOutputParams() const { return outParams; }
-    const LayerData& getOutputData() const { return outData; }
+    LayerData& getOutputData() const { return outData; }
     LayerType getLType() const { return lType; }
     bool isOutputBufferAlloced() const { return outData.isAlloced(); }
     bool checkDataInputCompatibility(const LayerData& data) const;
@@ -134,7 +134,7 @@ class Layer {
     LayerParams inParams;
 
     LayerParams outParams;
-    LayerData outData;
+    mutable LayerData outData;
 
     LayerType lType;
 };
