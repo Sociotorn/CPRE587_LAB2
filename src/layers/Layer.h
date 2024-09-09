@@ -199,7 +199,7 @@ inline void LayerData::saveData(Path filePath) {
 #endif
         std::cout << "Opened binary file " << params.filePath << std::endl;
     } else {
-        throw std::runtime_error("Failed to oelapsedpen binary file: " + params.filePath);
+        throw std::runtime_error("Failed to open binary file: " + params.filePath);
     }
 
 #ifdef ZEDBOARD
