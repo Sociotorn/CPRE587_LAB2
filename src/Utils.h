@@ -35,6 +35,7 @@
 
 #ifdef ZEDBOARD
 #   include <ff.h>
+#   include <xtime_l.h>
 #endif
 
 namespace ML {
@@ -149,10 +150,13 @@ template <typename... Args> inline void logError(const std::string& msg, Args&&.
 // --- Timing Functions ---
 class Timer {
    public:
+#ifdef ZEDBOARD
+    XTime begin, end;
+#else
     std::chrono::time_point<std::chrono::steady_clock> begin, end;
+#endif
     std::string name;
-    long int elapsed;
-    float miliseconds;
+    float milliseconds;
 
     Timer(const std::string&& name): name(name) {}
     ~Timer() {}
@@ -160,17 +164,25 @@ class Timer {
     // Start the Timer
     void start() {
 #ifndef DISABLE_TIMING
+#ifdef ZEDBOARD
+        XTime_GetTime(&begin);
+#else
         begin = std::chrono::steady_clock::now();
+#endif
 #endif
     }
 
     // Stop the Timer
     void stop() {
 #ifndef DISABLE_TIMING
+#ifdef ZEDBOARD
+        XTime_GetTime(&end);
+        milliseconds = ((end - begin) * 1000) / COUNTS_PER_SECOND;
+#else
         end = std::chrono::steady_clock::now();
-        elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
-        miliseconds = elapsed / 1000.0f;
-        log("Timer " + name + ": elapsed=" + std::to_string(miliseconds) + "ms");
+        milliseconds = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000.0f;
+#endif
+        log("Timer " + name + ": elapsed=" + std::to_string(milliseconds) + "ms");
 #endif
     }
 };
