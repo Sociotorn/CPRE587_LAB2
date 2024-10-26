@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstring>
 #include <memory>
+#include <sstream>
 
 #include "../Config.h"
 #include "../Utils.h"
@@ -41,6 +42,7 @@ class LayerParams {
 class LayerData {
    public:
     inline LayerData(const LayerParams& params) : params(params) {}
+    inline LayerData(const LayerParams& params, const Path path) : params(params.elementSize, params.dims, path) {}
 
     inline LayerData(const LayerData& other) : params(other.params) {
         allocData();
@@ -49,23 +51,46 @@ class LayerData {
 
     inline bool isAlloced() const { return data != nullptr; }
     inline const LayerParams& getParams() const { return params; }
+    inline const void* raw() const { return data.get(); }
+    inline void* raw() { return data.get(); }
+
+    
+    template <typename T> void boundsCheck(unsigned int flat_index) const {
+        if (sizeof(T) != params.elementSize) {
+            std::ostringstream oss;
+            oss << "Accessing LayerData with incorrect element size in `" << params.filePath << "` (" << params.dims[0];
+            for (size_t i = 1; i < params.dims.size(); i++) {
+                oss << ", " << params.dims[i];
+            }
+            oss << "), accessed by size " << sizeof(T) << ", but elementSize is " << params.elementSize << ".\n";
+            throw std::runtime_error(oss.str());
+        }
+        if (flat_index >= params.flat_count()) {
+            std::ostringstream oss;
+            oss << "Index out of bounds in `" << params.filePath << "` (" << params.dims[0];
+            for (size_t i = 1; i < params.dims.size(); i++) {
+                oss << ", " << params.dims[i];
+            }
+            oss << "), accessed element " << flat_index << ", but there are only " << flat_index << " elements.\n";
+            throw std::runtime_error(oss.str());
+        }
+    }
 
     // Get the data pointer and cast it
     template <typename T> T& get(unsigned int flat_index) {
+        // boundsCheck<T>(flat_index);
         return ((T*)data.get())[flat_index];
     }
 
     template <typename T> T get(unsigned int flat_index) const {
+        // boundsCheck<T>(flat_index);
         return ((T*)data.get())[flat_index];
     }
 
     // Allocate data values
     inline void allocData() {
         if (data) return;
-
-        // std::cout << "Allocating " << params.byte_size() << " with alignment " << params.elementSize << '\n';
         data.reset((char*)(new ui64[(params.byte_size() + 7)/8])); // Assume elementSize <= sizeof(u64) for alignment
-        // std::cout << "Success\n";
     }
 
     // Load data values

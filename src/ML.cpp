@@ -124,24 +124,22 @@ void runBasicTest(const Model& model, const Path& basePath) {
 
 void runLayerTest(const std::size_t layerNum, const Model& model, const Path& basePath) {
     // Load an image
-    logInfo("--- Running Inference Test ---");
-    dimVec inDims = {64, 64, 3};
+    logInfo(std::string("--- Running Layer Test ") + std::to_string(layerNum) + "---");
 
     // Construct a LayerData object from a LayerParams one
-    LayerData img({sizeof(fp32), inDims, basePath / "image_0.bin"});
+    LayerData img(model[layerNum].getInputParams(), test_image_files[layerNum].first);
     img.loadData();
 
     Timer timer("Layer Inference");
 
     // Run inference on the model
     timer.start();
-    const LayerData output = model.inferenceLayer(img, layerNum, Layer::InfType::NAIVE);
+    const LayerData& output = model.inferenceLayer(img, layerNum, Layer::InfType::NAIVE);
     timer.stop();
 
     // Compare the output
     // Construct a LayerData object from a LayerParams one
-    dimVec outDims = model[layerNum].getOutputParams().dims;
-    LayerData expected({sizeof(fp32), outDims, basePath / "image_0_data" / "layer_0_output.bin"});
+    LayerData expected(output.getParams(), basePath / "image_0_data" / "layer_0_output.bin");
     expected.loadData();
     output.compareWithinPrint<fp32>(expected);
 }
@@ -149,23 +147,21 @@ void runLayerTest(const std::size_t layerNum, const Model& model, const Path& ba
 void runInferenceTest(const Model& model, const Path& basePath) {
     // Load an image
     logInfo("--- Running Inference Test ---");
-    dimVec inDims = {64, 64, 3};
 
     // Construct a LayerData object from a LayerParams one
-    LayerData img({sizeof(fp32), inDims, basePath / "image_0.bin"});
+    LayerData img(model[0].getInputParams(), basePath / "image_0.bin");
     img.loadData();
 
     Timer timer("Full Inference");
 
     // Run inference on the model
     timer.start();
-    const LayerData output = model.inference(img, Layer::InfType::NAIVE);
+    const LayerData& output = model.inference(img, Layer::InfType::NAIVE);
     timer.stop();
 
     // Compare the output
     // Construct a LayerData object from a LayerParams one
-    dimVec outDims = model.getOutputLayer().getOutputParams().dims;
-    LayerData expected({sizeof(fp32), outDims, basePath / "image_0_data" / "layer_0_output.bin"});
+    LayerData expected(model.getOutputLayer().getOutputParams(), basePath / "image_0_data" / "layer_0_output.bin");
     expected.loadData();
     output.compareWithinPrint<fp32>(expected);
 }
