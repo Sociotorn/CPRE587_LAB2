@@ -1,6 +1,17 @@
 #!/bin/bash
 set -e
 
+WORKSPACE_DIR="workspace"
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -workspace_dir)
+      WORKSPACE_DIR="$2"
+      shift
+      ;;
+  esac
+  shift
+done
+
 . /remote/Xilinx/2020.1/Vitis/2020.1/settings64.sh
-make -C workspace/mlp/Debug mlp.elf
-./scripts/flash_only_vitis
+make -C ${WORKSPACE_DIR}/mlp/Debug mlp.elf
