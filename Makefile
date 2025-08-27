@@ -114,7 +114,7 @@ zip:
 	zip -9 -x Makefile -x "*.o" -r Submission.zip .
 
 help:
-	@echo "487/587 ML Framework Help:\n" \
+	@echo -e "487/587 ML Framework Help:\n" \
 	      "\tUsage: make <target> [params]\n" \
 	      "\n" \
 	      "Targets:\n" \

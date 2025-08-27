@@ -127,7 +127,9 @@ void runLayerTest(const std::size_t layerNum, const Model& model, const Path& ba
     logInfo(std::string("--- Running Layer Test ") + std::to_string(layerNum) + "---");
 
     // Construct a LayerData object from a LayerParams one
-    LayerData img(model[layerNum].getInputParams(), test_image_files[layerNum].first);
+    // LayerData img(model[layerNum].getInputParams(), test_image_files[layerNum].first);
+    dimVec inDims = {64, 64, 3};
+    LayerData img({sizeof(fp32), inDims, basePath / "image_0.bin"});
     img.loadData();
 
     Timer timer("Layer Inference");
