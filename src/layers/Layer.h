@@ -288,7 +288,7 @@ template <typename T> float LayerData::compare(const LayerData& other) const {
     // return max_diff;
 
 
-    //COSINE SIMILARITY
+    //MODIFIED LENGTH WEIGHTED COSINE SIMILARITY
     double dot_product = 0;
     double a_magnitude_sq = 0;
     double b_magnitude_sq = 0;
@@ -303,7 +303,7 @@ template <typename T> float LayerData::compare(const LayerData& other) const {
         dot_product += a_vector[i] * b_vector[i];
     }
 
-    float cosine_similarity = dot_product / (std::sqrt(a_magnitude_sq) * std::sqrt(b_magnitude_sq));
+    float cosine_similarity = dot_product / (std::max(a_magnitude_sq, b_magnitude_sq));
 
     return cosine_similarity;
 }
@@ -327,7 +327,7 @@ template <typename T, typename T_EP> bool LayerData::compareWithinPrint(const La
     
     // return result;
 
-    //COSINE SIMILARITY
+    //LENGTH WEIGHTED COSINE SIMILARITY
     float cosine_similarity = compare<T>(other);
     bool result = (compare<T>(other) > 0.8);
 
