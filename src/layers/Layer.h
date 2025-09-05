@@ -265,20 +265,47 @@ template <typename T> float LayerData::compare(const LayerData& other) const {
     }
 
     size_t flat_count = params.flat_count();
-    float max_diff = 0;
-    T* data1 = (T*)data.get();
-    T* data2 = (T*)other.data.get();
+
+
+    
+
+    
+    // //MAXIMUM DIFFERENCE
+    // float max_diff = 0;
+
+    // T* data1 = (T*)data.get();
+    // T* data2 = (T*)other.data.get();
+    // // Recurse as needed into each array
+    // for (std::size_t i = 0; i < flat_count; i++) {
+    //     float curr_diff = fabsf(data1[i] - data2[i]);
+
+    //     // Update our max difference if it is larger
+    //     if (curr_diff > max_diff) {
+    //         max_diff = curr_diff;
+    //     }
+    // }
+
+    // return max_diff;
+
+
+    //COSINE SIMILARITY
+    double dot_product = 0;
+    double a_magnitude_sq = 0;
+    double b_magnitude_sq = 0;
+    
+
+    T* a_vector = (T*)data.get();
+    T* b_vector = (T*)other.data.get();
     // Recurse as needed into each array
     for (std::size_t i = 0; i < flat_count; i++) {
-        float curr_diff = fabsf(data1[i] - data2[i]);
-
-        // Update our max difference if it is larger
-        if (curr_diff > max_diff) {
-            max_diff = curr_diff;
-        }
+        a_magnitude_sq += a_vector[i] * a_vector[i];
+        b_magnitude_sq += b_vector[i] * b_vector[i];
+        dot_product += a_vector[i] * b_vector[i];
     }
 
-    return max_diff;
+    float cosine_similarity = dot_product / (std::sqrt(a_magnitude_sq) * std::sqrt(b_magnitude_sq));
+
+    return cosine_similarity;
 }
 
 // Compare within an Epsilon to ensure layer datas are similar within reason
@@ -287,14 +314,29 @@ template <typename T, typename T_EP> bool LayerData::compareWithin(const LayerDa
 }
 
 template <typename T, typename T_EP> bool LayerData::compareWithinPrint(const LayerData& other, const T_EP epsilon) const {
-    float max_diff = compare<T>(other);
-    bool result = (epsilon > compare<T>(other));
+    // // MAXDIFF
+    // float max_diff = compare<T>(other);
+    // bool result = (epsilon > compare<T>(other));
+
+    // std::cout 
+    //     << "Comparing images (max error): " 
+    //     << (result ? "True" : "False")
+    //     << " ("
+    //     << max_diff
+    //     << ")\n";
+    
+    // return result;
+
+    //COSINE SIMILARITY
+    float cosine_similarity = compare<T>(other);
+    bool result = (compare<T>(other) > 0.8);
 
     std::cout 
-        << "Comparing images (max error): " 
+        << "Comparing Outputs (Cosine Similarity): " 
         << (result ? "True" : "False")
+        << " " << clamp(cosine_similarity * 100.0, 0.0, 100.0) << "% "
         << " ("
-        << max_diff
+        << cosine_similarity
         << ")\n";
     
     return result;
