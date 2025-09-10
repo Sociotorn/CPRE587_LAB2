@@ -303,12 +303,12 @@ template <typename T> float LayerData::compare(const LayerData& other) const {
         dot_product += a_vector[i] * b_vector[i];
     }
 
+    float cosine_similarity = 0;
     if (a_magnitude_sq == 0 && b_magnitude_sq == 0){
         std::cout << "Zero Magnitude Vector Comparison" << std::endl;
-        float cosine_similarity = 0;
     }
     else {
-        float cosine_similarity = dot_product / (std::max(a_magnitude_sq, b_magnitude_sq));
+        cosine_similarity = dot_product / (std::max(a_magnitude_sq, b_magnitude_sq));
     }
     
     return cosine_similarity;
