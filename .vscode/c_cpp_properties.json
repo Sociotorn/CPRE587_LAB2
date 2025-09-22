@@ -19,13 +19,16 @@
         {
             "name": "Local",
             "includePath": [
-                "${workspaceFolder}/src"
+                "${workspaceFolder}/src",
+                "${workspaceFolder}/src/layers"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "intelliSenseMode": "linux-gcc-arm"
+            "intelliSenseMode": "linux-gcc-arm",
+            "configurationProvider": "ms-vscode.makefile-tools"
+
         }
     ],
     "version": 4

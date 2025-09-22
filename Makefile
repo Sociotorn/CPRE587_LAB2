@@ -15,14 +15,14 @@ EXE = $(BIN)/ml
 EXE_DEBUG = $(BIN)/ml_debug
 
 # ifeq ($(OS), Windows_NT) # Windows
-# 	CC_Linux = 
+# 	CC_Linux =
 # 	CC_WIN = cl
 # 	WIN_SETUP = vcvarsall.bat amd64
 #	EXECUTE_EXT = .exe
 # else # Linux
-	CC_LINUX = g++ 
+	CC_LINUX = g++
 	CC_WIN = x86_64-w64-mingw32-g++ -static-libgcc -static-libstdc++ -fstack-protector
-	CC_ALL = -lstdc++ -Wall -Werror -pedantic -std=c++11
+	CC_ALL = -lstdc++ -Wall -pedantic -std=c++11
 	CC_DEBUG = -g -Og
 	CC_OPT_FLAGS = -O3 -fno-tree-pre
 	CC_SIMD_FLAGS = -march=native
@@ -62,7 +62,7 @@ OBJS_DEBUG = $(patsubst $(SDIR)/%, $(BDIR)/%, $(_OBJS_DEBUG))	# Create paths for
 
 
 # Make Rules
-all: build 
+all: build
 update: check_update pull_update
 submit: check_update format build zip
 
@@ -78,7 +78,7 @@ $(BIN)/ml: $(OBJS)
 	$(CC_LINUX) $(CC_FLAGS) $(OBJS) -o $@ $(CC_FLAGS_END)
 
 $(BIN)/ml_debug: $(OBJS_DEBUG)
-	$(CC_LINUX) $(CC_FLAGS_DEBUG) $(OBJS_DEBUG) -o $@ $(CC_FLAGS_END)
+	$(CC_LINUX) $(CC_DEBUG_FLAGS) $(OBJS_DEBUG) -o $@ $(CC_FLAGS_END)
 
 $(BDIR)/%.o: $(SDIR)/%.cpp
 	mkdir -p $(dir $@)
@@ -86,7 +86,7 @@ $(BDIR)/%.o: $(SDIR)/%.cpp
 
 $(BDIR)/%_debug.o: $(SDIR)/%.cpp
 	mkdir -p $(dir $@)
-	$(CC_LINUX) $(CC_FLAGS_DEBUG) -c $(INC) -o $@ $< $(CFLAGS)
+	$(CC_LINUX) $(CC_DEBUG_FLAGS) -c $(INC) -o $@ $< $(CFLAGS)
 
 # Run the framework
 #run:
@@ -129,7 +129,7 @@ help:
 	      "\tsubmit: \tZips directory for submission\n" \
 	      "\thelp: \t\tShows this help message"
 #"\trun: \t\tRuns the optimized binary with the provided params\n" \
-#"\tdebug: \t\tRuns the debug binary with the provided params\n" \ 
+#"\tdebug: \t\tRuns the debug binary with the provided params\n" \
 
 # Format source files
 format:

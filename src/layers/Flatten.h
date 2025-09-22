@@ -5,10 +5,10 @@
 #include "Layer.h"
 
 namespace ML {
-class MaxPoolingLayer : public Layer {
+class Flatten : public Layer {
    public:
-    MaxPoolingLayer(const LayerParams inParams, const LayerParams outParams)
-        : Layer(inParams, outParams, LayerType::MAX_POOLING){}
+    Flatten(const LayerParams inParams, const LayerParams outParams)
+        : Layer(inParams, outParams, LayerType::FLATTEN){}
 
     // Allocate all resources needed for the layer & Load all of the required data for the layer
     virtual void allocLayer() override {

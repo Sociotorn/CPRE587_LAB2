@@ -6,7 +6,8 @@
 #include "layers/Dense.h"
 #include "layers/Layer.h"
 #include "layers/MaxPooling.h"
-#include "layers/Softmax.h"
+#include "layers/SoftMax.h"
+#include "layers/Flatten.h"
 
 namespace ML {
 class Model {

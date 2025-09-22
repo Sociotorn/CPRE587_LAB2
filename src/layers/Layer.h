@@ -11,6 +11,13 @@
 
 namespace ML {
 
+enum ParamIndex {
+
+    HEIGHT = 0,
+    WIDTH = 1,
+    CHANNELS = 2,
+};
+
 // Layer Parameter structure
 class LayerParams {
    public:
@@ -54,7 +61,7 @@ class LayerData {
     inline const void* raw() const { return data.get(); }
     inline void* raw() { return data.get(); }
 
-    
+
     template <typename T> void boundsCheck(unsigned int flat_index) const {
         if (sizeof(T) != params.elementSize) {
             std::ostringstream oss;
@@ -124,7 +131,7 @@ class Layer {
     enum class InfType { NAIVE, THREADED, TILED, SIMD };
 
     // Layer Type
-    enum class LayerType { NONE, CONVOLUTIONAL, DENSE, SOFTMAX, MAX_POOLING };
+    enum class LayerType { NONE, CONVOLUTIONAL, DENSE, SOFTMAX, MAX_POOLING, FLATTEN };
 
    public:
     // Contructors
@@ -207,7 +214,7 @@ inline void LayerData::loadData(Path filePath) {
 // Load data values
 inline void LayerData::saveData(Path filePath) {
     if (filePath.empty()) filePath = params.filePath;
-    
+
     // Ensure a file path to load data from has been given
     if (filePath.empty()) throw std::runtime_error("No file path given for required layer data to save to");
 
@@ -267,9 +274,9 @@ template <typename T> float LayerData::compare(const LayerData& other) const {
     size_t flat_count = params.flat_count();
 
 
-    
 
-    
+
+
     // //MAXIMUM DIFFERENCE
     // float max_diff = 0;
 
@@ -292,7 +299,7 @@ template <typename T> float LayerData::compare(const LayerData& other) const {
     double dot_product = 0;
     double a_magnitude_sq = 0;
     double b_magnitude_sq = 0;
-    
+
 
     T* a_vector = (T*)data.get();
     T* b_vector = (T*)other.data.get();
@@ -310,7 +317,7 @@ template <typename T> float LayerData::compare(const LayerData& other) const {
     else {
         cosine_similarity = dot_product / (std::max(a_magnitude_sq, b_magnitude_sq));
     }
-    
+
     return cosine_similarity;
 }
 
@@ -324,27 +331,27 @@ template <typename T, typename T_EP> bool LayerData::compareWithinPrint(const La
     // float max_diff = compare<T>(other);
     // bool result = (epsilon > compare<T>(other));
 
-    // std::cout 
-    //     << "Comparing images (max error): " 
+    // std::cout
+    //     << "Comparing images (max error): "
     //     << (result ? "True" : "False")
     //     << " ("
     //     << max_diff
     //     << ")\n";
-    
+
     // return result;
 
     //LENGTH WEIGHTED COSINE SIMILARITY
     float cosine_similarity = compare<T>(other);
     bool result = (compare<T>(other) > 0.8);
 
-    std::cout 
-        << "Comparing Outputs (Cosine Similarity): " 
+    std::cout
+        << "Comparing Outputs (Cosine Similarity): "
         << (result ? "True" : "False")
         << " " << clamp(cosine_similarity * 100.0, 0.0, 100.0) << "% "
         << " ("
         << cosine_similarity
         << ")\n";
-    
+
     return result;
 }
 

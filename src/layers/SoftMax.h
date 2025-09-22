@@ -5,10 +5,10 @@
 #include "Layer.h"
 
 namespace ML {
-class MaxPoolingLayer : public Layer {
+class SoftMaxLayer : public Layer {
    public:
-    MaxPoolingLayer(const LayerParams inParams, const LayerParams outParams)
-        : Layer(inParams, outParams, LayerType::MAX_POOLING){}
+    SoftMaxLayer(const LayerParams inParams, const LayerParams outParams)
+        : Layer(inParams, outParams, LayerType::SOFTMAX){}
 
     // Allocate all resources needed for the layer & Load all of the required data for the layer
     virtual void allocLayer() override {
