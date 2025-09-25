@@ -25,6 +25,12 @@ const LayerData& Model::inferenceLayer(const LayerData& inData, const int layerN
     assert(layer.getInputParams().isCompatible(inData.getParams()) && "Input data is not compatible with layer");
     assert(layer.isOutputBufferAlloced() && "Output buffer must be allocated prior to inference");
 
+    char timer_name_char[64];
+    sprintf(timer_name_char, "L%d", layerNum);
+    std::string timer_name = std::string(timer_name_char);
+    Timer elapsedTimer(std::move(timer_name));
+    elapsedTimer.start();
+
     switch (infType) {
     case Layer::InfType::NAIVE:
         layer.computeNaive(inData);
@@ -41,6 +47,8 @@ const LayerData& Model::inferenceLayer(const LayerData& inData, const int layerN
     default:
         assert(false && "Inference Type not implemented");
     }
+
+    elapsedTimer.stop();
 
     return layer.getOutputData();
 }
